@@ -1,41 +1,41 @@
 FROM ubuntu:20.04
 
-# Invalidate cache and set a default value for APP_NAME
-ARG APP_NAME=myapp
+ARG APP_NAME=django_crm
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Test ARG
-RUN test -n "$APP_NAME"
-
-# Install system packages
 RUN apt-get update -y
 RUN apt-get install -y \
-  python3-pip \
-  python3-venv \
-  build-essential \
-  libpq-dev \
-  libmariadbclient-dev \
-  libjpeg62-dev \
-  zlib1g-dev \
-  libwebp-dev \
-  curl \
-  vim \
-  net-tools
+    python3-pip \
+    python3-venv \
+    build-essential \
+    libpq-dev \
+    libmariadbclient-dev \
+    libjpeg62-dev \
+    zlib1g-dev \
+    libwebp-dev \
+    curl \
+    vim \
+    net-tools \
+    postgresql-client
 
-# Setup user
 RUN useradd -ms /bin/bash ubuntu
 USER ubuntu
 
-# Install app
-RUN mkdir -p /home/ubuntu/"$APP_NAME"/"$APP_NAME"
-WORKDIR /home/ubuntu/"$APP_NAME"/"$APP_NAME"
-COPY . .
-RUN python3 -m venv ../venv
-RUN . ../venv/bin/activate
-RUN /home/ubuntu/"$APP_NAME"/venv/bin/pip install -U pip
-RUN /home/ubuntu/"$APP_NAME"/venv/bin/pip install -r requirements.txt
-RUN /home/ubuntu/"$APP_NAME"/venv/bin/pip install gunicorn
+RUN mkdir -p /home/ubuntu/"$APP_NAME"
+WORKDIR /home/ubuntu/"$APP_NAME"
 
-# Setup path
-ENV PATH="${PATH}:/home/ubuntu/$APP_NAME/$APP_NAME/scripts"
+COPY --chown=ubuntu:ubuntu . .
+RUN python3 -m venv venv
+RUN . venv/bin/activate && \
+    pip install --upgrade pip && \
+    pip install -r requirements.txt && \
+    pip install gunicorn
 
-USER ubuntu
+ENV PATH="/home/ubuntu/$APP_NAME/venv/bin:$PATH"
+ENV PORT=8000
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+EXPOSE 8000
+
+CMD ["sh", "-c", "source venv/bin/activate && python manage.py migrate && gunicorn crm.wsgi:application --bind 0.0.0.0:$PORT --timeout 120"]
