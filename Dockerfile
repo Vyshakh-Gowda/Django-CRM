@@ -1,12 +1,12 @@
 FROM ubuntu:20.04
 
-# invalidate cache
-ARG APP_NAME
+# Invalidate cache and set a default value for APP_NAME
+ARG APP_NAME=myapp
 
-# test arg
+# Test ARG
 RUN test -n "$APP_NAME"
 
-# install system packages
+# Install system packages
 RUN apt-get update -y
 RUN apt-get install -y \
   python3-pip \
@@ -17,15 +17,15 @@ RUN apt-get install -y \
   libjpeg62-dev \
   zlib1g-dev \
   libwebp-dev \
-  curl  \
+  curl \
   vim \
   net-tools
 
-# setup user
+# Setup user
 RUN useradd -ms /bin/bash ubuntu
 USER ubuntu
 
-# install app
+# Install app
 RUN mkdir -p /home/ubuntu/"$APP_NAME"/"$APP_NAME"
 WORKDIR /home/ubuntu/"$APP_NAME"/"$APP_NAME"
 COPY . .
@@ -35,7 +35,7 @@ RUN /home/ubuntu/"$APP_NAME"/venv/bin/pip install -U pip
 RUN /home/ubuntu/"$APP_NAME"/venv/bin/pip install -r requirements.txt
 RUN /home/ubuntu/"$APP_NAME"/venv/bin/pip install gunicorn
 
-# setup path
+# Setup path
 ENV PATH="${PATH}:/home/ubuntu/$APP_NAME/$APP_NAME/scripts"
 
 USER ubuntu
