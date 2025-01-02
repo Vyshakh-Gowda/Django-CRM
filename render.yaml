@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: django-crm
+    env: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    startCommand: gunicorn crm.wsgi:application
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: False
+      - key: DATABASE_URL
+        fromDatabase:
+          name: django-crm-db
+          property: connectionString
+
+databases:
+  - name: django-crm-db
+    databaseName: django_crm
+    user: django_crm
