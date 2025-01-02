@@ -26,10 +26,10 @@ WORKDIR /home/ubuntu/"$APP_NAME"
 
 COPY --chown=ubuntu:ubuntu . .
 RUN python3 -m venv venv
-RUN . venv/bin/activate && \
+RUN /bin/bash -c "source venv/bin/activate && \
     pip install --upgrade pip && \
     pip install -r requirements.txt && \
-    pip install gunicorn
+    pip install gunicorn"
 
 ENV PATH="/home/ubuntu/$APP_NAME/venv/bin:$PATH"
 ENV PORT=8000
@@ -38,4 +38,4 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "source venv/bin/activate && python manage.py migrate && gunicorn crm.wsgi:application --bind 0.0.0.0:$PORT --timeout 120"]
+CMD ["/bin/bash", "-c", ". venv/bin/activate && python manage.py migrate && gunicorn crm.wsgi:application --bind 0.0.0.0:$PORT --timeout 120"]
